@@ -30,11 +30,65 @@
             font-weight: 600;
         }
 
-        /* 工具列 */
-        .toolbar {
+        /* 功能控制面板 */
+        .control-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 30px;
             display: flex;
+            flex-wrap: wrap;
             gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .control-panel input[type="text"] {
+            border: none;
+            background: transparent;
+            padding: 6px;
+            font-size: 14px;
+            width: 110px;
+            outline: none;
+        }
+
+        /* 每排數量調整滑桿樣式 */
+        .cols-slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #eef2f7;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .cols-slider-group input[type="range"] {
+            cursor: pointer;
+            width: 100px;
+        }
+        .cols-span {
+            display: inline-block;
+            width: 35px;
+            font-weight: bold;
+            color: var(--primary-color);
         }
 
         button {
@@ -59,20 +113,13 @@
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column; /* 改為直式排列，內部用 row 來控管排 */
-            gap: 35px;
-            max-width: 960px;
-            width: 100%;
+            display: grid; /* 使用 Grid 完美控制每排數量與對齊 */
+            gap: 35px 30px;
+            justify-content: center;
+            max-width: 95vw;
+            width: fit-content;
             box-sizing: border-box;
-        }
-
-        /* 每一排的容器 */
-        .palette-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            justify-content: flex-start; /* 靠左齊，維持設定的順序 */
+            transition: grid-template-columns 0.2s ease;
         }
 
         /* 單個色圈項目 */
@@ -84,8 +131,8 @@
             width: 120px;
         }
 
-        /* 顏色圓圈按鈕 */
-        .color-circle-btn {
+        /* 顏色圓圈（按鈕外觀） */
+        .color-circle-label {
             width: 90px;
             height: 90px;
             border-radius: 50%;
@@ -93,12 +140,17 @@
             box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.08);
             transition: transform 0.2s ease;
             margin-bottom: 12px;
-            border: none;
-            padding: 0;
         }
 
-        .color-circle-btn:hover {
+        .color-circle-label:hover {
             transform: scale(1.05);
+        }
+
+        .color-picker {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
         }
 
         /* 顏色名稱輸入框 */
@@ -145,374 +197,199 @@
         .color-item:hover .btn-delete {
             opacity: 1;
         }
-
-        /* ================= 客製化調色盤彈出視窗 (Modal) ================= */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-            z-index: 1000;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-            width: 280px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            transform: translateY(-20px);
-            transition: transform 0.2s ease;
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
-            color: #333;
-        }
-
-        .modal-picker-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .modal-color-input {
-            width: 60px;
-            height: 60px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: transparent;
-            padding: 0;
-        }
-
-        .modal-hex-group {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 6px 10px;
-            background: #fafafa;
-            width: 120px;
-        }
-
-        .modal-hex-group span {
-            color: #888;
-            font-weight: bold;
-            margin-right: 4px;
-        }
-
-        .modal-hex-group input {
-            border: none;
-            background: transparent;
-            width: 100%;
-            font-size: 16px;
-            font-family: monospace;
-            outline: none;
-            text-transform: uppercase;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: 8px;
-            font-size: 14px;
-            border-radius: 6px;
-        }
-
-        .btn-cancel { background: #eee; color: #333; }
-        .btn-cancel:hover { background: #ddd; }
-        .btn-confirm { background: var(--primary-color); color: white; }
-        .btn-confirm:hover { background: #357abd; }
-
     </style>
 </head>
 <body>
 
     <h1>我的專屬選色表</h1>
 
-    <!-- 功能按鈕區 -->
-    <div class="toolbar">
-        <button class="btn-add" onclick="createNewColorItem()">+ 新增顏色</button>
+    <!-- 功能控制面板 -->
+    <div class="control-panel">
+        <!-- 色碼與名稱指定區 -->
+        <div class="input-group">
+            <label for="input-hex">#</label>
+            <input type="text" id="input-hex" placeholder="例如: FF5733" maxlength="6">
+        </div>
+        <div class="input-group">
+            <input type="text" id="input-name" placeholder="顏色名稱 (選填)">
+        </div>
+        
+        <button class="btn-add" onclick="quickAddColor()">+ 指定色碼新增</button>
+
+        <!-- 每排顯示數量調整滑桿 -->
+        <div class="cols-slider-group">
+            <label for="cols-slider">每排數量：</label>
+            <input type="range" id="cols-slider" min="1" max="10" value="6" oninput="changeColumns(this.value)">
+            <span class="cols-span" id="cols-val">6 個</span>
+        </div>
+
         <button class="btn-download" onclick="downloadPalette()">↓ 下載色表圖片</button>
     </div>
 
     <!-- 色表主要區塊 -->
-    <div class="palette-container" id="palette-container">
-        <!-- 每一排都有自己獨立的 div 容器，以滿足排版需求 -->
-        <div class="palette-row" id="row-1"></div>
-        <div class="palette-row" id="row-2"></div>
-        <div class="palette-row" id="row-3"></div>
-    </div>
-
-    <!-- 客製化調色盤彈出視窗 -->
-    <div class="modal-overlay" id="color-modal">
-        <div class="modal-content">
-            <h3 class="modal-title">編輯顏色</h3>
-            
-            <div class="modal-picker-row">
-                <input type="color" id="modal-picker" class="modal-color-input" oninput="syncHexFromPicker(this.value)">
-                <div class="modal-hex-group">
-                    <span>#</span>
-                    <input type="text" id="modal-hex-text" maxlength="6" placeholder="FFFFFF" oninput="syncPickerFromHex(this.value)">
-                </div>
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeModal()">取消</button>
-                <button class="btn-confirm" onclick="confirmColorChange()">確定</button>
-            </div>
-        </div>
-    </div>
+    <div class="palette-container" id="palette-container"></div>
 
     <script>
         const container = document.getElementById('palette-container');
-        const modal = document.getElementById('color-modal');
-        const modalPicker = document.getElementById('modal-picker');
-        const modalHexText = document.getElementById('modal-hex-text');
-        
         let colorCounter = 0;
-        let currentEditingItemId = null;
+        let currentCols = 6; // 預設每排 6 個
 
-        // 依據你的規格書建立的預設顏色結構
-        const defaultPalette = [
-            {
-                rowId: 'row-1',
-                colors: [
-                    { hex: '#F2F1D7', name: '奶油白' },
-                    { hex: '#E8F0AA', name: '嫩草黃' },
-                    { hex: '#EED6CC', name: '藕粉色' },
-                    { hex: '#E9A7CE', name: '糖果粉' },
-                    { hex: '#9DBAE9', name: '寧靜藍' },
-                    { hex: '#B5A8E1', name: '薰衣草紫' }
-                ]
-            },
-            {
-                rowId: 'row-2',
-                colors: [
-                    { hex: '#A8E6CF', name: '蒂芙尼綠' },
-                    { hex: '#D2F13A', name: '檸檬綠' },
-                    { hex: '#3EB034', name: '翠草綠' },
-                    { hex: '#00A896', name: '孔雀藍綠' },
-                    { hex: '#ADB1B4', name: '現代灰' }
-                ]
-            },
-            {
-                rowId: 'row-3',
-                colors: [
-                    { hex: '#544A41', name: '摩卡棕' },
-                    { hex: '#2C2F33', name: '碳灰黑' },
-                    { hex: '#1B264F', name: '深海藍' },
-                    { hex: '#FFD131', name: '向日葵黃' },
-                    { hex: '#B8DE4C', name: '奇異果綠' },
-                    { hex: '#E63946', name: '珊瑚紅' }
-                ]
-            }
+        // 17 個指定的預設顏色與名稱
+        const defaultColors = [
+            { hex: '#F2F1D7', name: '奶油白' },
+            { hex: '#E8F0AA', name: '嫩草黃' },
+            { hex: '#EED6CC', name: '藕粉色' },
+            { hex: '#E9A7CE', name: '糖果粉' },
+            { hex: '#9DBAE9', name: '寧靜藍' },
+            { hex: '#B5A8E1', name: '薰衣草紫' },
+            { hex: '#A8E6CF', name: '蒂芙尼綠' },
+            { hex: '#D2F13A', name: '檸檬綠' },
+            { hex: '#3EB034', name: '翠草綠' },
+            { hex: '#00A896', name: '孔雀藍綠' },
+            { hex: '#ADB1B4', name: '現代灰' },
+            { hex: '#544A41', name: '摩卡棕' },
+            { hex: '#2C2F33', name: '碳灰黑' },
+            { hex: '#1B264F', name: '深海藍' },
+            { hex: '#FFD131', name: '向日葵黃' },
+            { hex: '#B8DE4C', name: '奇異果綠' },
+            { hex: '#E63946', name: '珊瑚紅' }
         ];
 
-        // 初始化網頁時載入全部色圈
-        defaultPalette.forEach(rowData => {
-            const rowTarget = document.getElementById(rowData.rowId);
-            rowData.colors.forEach(item => {
-                renderColorItem(rowTarget, item.hex, item.name);
-            });
-        });
+        // 初始化載入
+        changeColumns(currentCols);
+        defaultColors.forEach(item => addColorItem(item.hex, item.name));
 
         /**
-         * 渲染色圈 DOM 到指定的排 (Row) 中
+         * 自由調整每排顯示數量
          */
-        function renderColorItem(targetRow, hex, name) {
+        function changeColumns(val) {
+            currentCols = parseInt(val);
+            document.getElementById('cols-val').innerText = `${val} 個`;
+            // 動態修改 Grid 排版欄位數
+            container.style.gridTemplateColumns = `repeat(${currentCols}, 120px)`;
+        }
+
+        /**
+         * 基礎新增色圈函數（點擊標籤會觸發同一個項目的系統調色盤）
+         */
+        function addColorItem(hex, name) {
             colorCounter++;
-            const itemId = `item-${colorCounter}`;
+            const id = `color-${colorCounter}`;
 
             const itemDiv = document.createElement('div');
             itemDiv.className = 'color-item';
-            itemDiv.id = itemId;
-            itemDiv.dataset.hex = hex;
 
             itemDiv.innerHTML = `
                 <button class="btn-delete" title="刪除" onclick="this.parentElement.remove()">×</button>
-                <button class="color-circle-btn" style="background-color: ${hex};" onclick="openModal('${itemId}')"></button>
+                <label for="${id}" class="color-circle-label" style="background-color: ${hex};"></label>
+                <input type="color" id="${id}" class="color-picker" value="${hex}" oninput="updateColor(this)">
                 <input type="text" class="color-name" value="${name}" placeholder="輸入顏色名稱">
             `;
 
-            targetRow.appendChild(itemDiv);
+            container.appendChild(itemDiv);
         }
 
         /**
-         * 頂部「+ 新增顏色」功能按鈕：
-         * 自動偵測，如果最後一排沒滿 6 個就塞在最後一排，滿了或沒排了就動態生成新的一排
+         * 控制面板：指定色碼新增
          */
-        function createNewColorItem() {
-            let rows = document.querySelectorAll('.palette-row');
-            let lastRow = rows[rows.length - 1];
+        function quickAddColor() {
+            const hexInput = document.getElementById('input-hex').value.trim();
+            const nameInput = document.getElementById('input-name').value.trim();
 
-            // 如果最後一排不存在，或者最後一排裡面的色圈已經達到或超過 6 個，就開一個新排
-            if (!lastRow || lastRow.children.length >= 6) {
-                const newRowId = `row-dynamic-${Date.now()}`;
-                const newRow = document.createElement('div');
-                newRow.className = 'palette-row';
-                newRow.id = newRowId;
-                container.appendChild(newRow);
-                lastRow = newRow;
-            }
-
-            renderColorItem(lastRow, '#4A90E2', '新顏色');
-        }
-
-        /* ================= 彈出視窗與輸入連動邏輯 ================= */
-        function openModal(itemId) {
-            currentEditingItemId = itemId;
-            const itemDiv = document.getElementById(itemId);
-            const currentHex = itemDiv.dataset.hex;
-
-            modalPicker.value = currentHex;
-            modalHexText.value = currentHex.replace('#', '').toUpperCase();
-
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            modal.classList.remove('active');
-            currentEditingItemId = null;
-        }
-
-        function syncHexFromPicker(hex) {
-            modalHexText.value = hex.replace('#', '').toUpperCase();
-        }
-
-        function syncPickerFromHex(text) {
-            const cleanText = text.trim();
-            if (/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(cleanText)) {
-                modalPicker.value = `#${cleanText}`;
-            }
-        }
-
-        function confirmColorChange() {
-            if (!currentEditingItemId) return;
-
-            const hexInput = modalHexText.value.trim();
-            if (!/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(hexInput)) {
-                alert('請輸入正確的 6 位或 3 位 Hex 色碼！\n例如: F2F1D7');
-                return;
-            }
-
-            const finalHex = `#${hexInput}`;
-            const itemDiv = document.getElementById(currentEditingItemId);
+            const hexRegex = /^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/;
             
-            itemDiv.dataset.hex = finalHex;
-            itemDiv.querySelector('.color-circle-btn').style.backgroundColor = finalHex;
+            let finalHex = '#4A90E2'; // 預設藍色
+            if (hexInput !== '') {
+                if (!hexRegex.test(hexInput)) {
+                    alert('請輸入正確的 16 進位色碼格式！\n例如：FF5733 或 6cf');
+                    return;
+                }
+                finalHex = hexInput.startsWith('#') ? hexInput : `#${hexInput}`;
+            }
 
-            closeModal();
+            const finalName = nameInput !== '' ? nameInput : `自訂色 ${finalHex.toUpperCase()}`;
+            
+            // 新增至畫面
+            addColorItem(finalHex, finalName);
+
+            // 清空輸入框
+            document.getElementById('input-hex').value = '';
+            document.getElementById('input-name').value = '';
         }
 
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeModal();
-        });
+        /**
+         * 即時同步系統調色盤色彩到圓圈
+         */
+        function updateColor(input) {
+            const label = input.previousElementSibling;
+            label.style.backgroundColor = input.value;
+        }
 
-
-        /* ================= 高畫質圖片導出功能 (精準同步排版) ================= */
+        /**
+         * 高畫質 Canvas 圖片下載功能 (精準同步當前排版)
+         */
         function downloadPalette() {
-            const allRows = document.querySelectorAll('.palette-row');
-            
-            // 過濾掉被使用者刪光、空無一物的排
-            const validRows = Array.from(allRows).filter(row => row.children.length > 0);
-
-            if (validRows.length === 0) {
-                alert('目前選色表內沒有任何顏色可以下載唷！');
+            const items = document.querySelectorAll('.color-item');
+            if (items.length === 0) {
+                alert('目前選色表內沒有顏色可以下載唷！');
                 return;
             }
 
-            // 尺寸基準參數
+            // 佈局基礎尺寸
             const itemWidth = 120;
             const itemHeight = 140;
-            const gap = 30;
+            const gapX = 30;
+            const gapY = 35;
             const padding = 40;
             
-            // 計算畫布最大寬度（找出最多元件的那一排有多少個元件，最多6個）
-            let maxColsInAnyRow = 0;
-            validRows.forEach(row => {
-                if (row.children.length > maxColsInAnyRow) {
-                    maxColsInAnyRow = row.children.length;
-                }
-            });
+            // 根據目前使用者設定的滑桿決定排版
+            const maxCols = Math.min(items.length, currentCols); 
+            const rows = Math.ceil(items.length / maxCols);
 
-            const canvasWidth = (maxColsInAnyRow * itemWidth) + ((maxColsInAnyRow - 1) * gap) + (padding * 2);
-            const canvasHeight = (validRows.length * itemHeight) + ((validRows.length - 1) * gap) + (padding * 2);
+            const canvasWidth = (maxCols * itemWidth) + ((maxCols - 1) * gapX) + (padding * 2);
+            const canvasHeight = (rows * itemHeight) + ((rows - 1) * gapY) + (padding * 2);
 
-            // 初始化畫布 (2倍大小防止手機或視網膜螢幕模糊)
+            // 建立高解析度畫布
             const canvas = document.createElement('canvas');
             canvas.width = canvasWidth * 2; 
             canvas.height = canvasHeight * 2;
             const ctx = canvas.getContext('2d');
             ctx.scale(2, 2);
 
-            // 填背景底色 (純白)
+            // 背景填滿純白
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            // 嚴格按照「每一排」的結構在 Canvas 畫出相對應位置
-            validRows.forEach((row, rowIndex) => {
-                const items = row.querySelectorAll('.color-item');
+            // 依序繪製
+            items.forEach((item, index) => {
+                const col = index % maxCols;
+                const row = Math.floor(index / maxCols);
+
+                const x = padding + col * (itemWidth + gapX) + itemWidth / 2;
+                const y = padding + row * (itemHeight + gapY) + 45; 
+
+                // 抓取當前調色盤的真實色彩值與輸入的名字
+                const hexColor = item.querySelector('.color-picker').value;
+                const colorName = item.querySelector('.color-name').value || '未命名';
+
+                // 1. 畫圓圈
+                ctx.beginPath();
+                ctx.arc(x, y, 45, 0, Math.PI * 2); 
+                ctx.fillStyle = hexColor;
+                ctx.fill();
                 
-                items.forEach((item, colIndex) => {
-                    // 計算當前圓圈正中央在畫布上的 X, Y 座標
-                    const x = padding + colIndex * (itemWidth + gap) + itemWidth / 2;
-                    const y = padding + rowIndex * (itemHeight + gap) + 45; 
+                ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
 
-                    const hexColor = item.dataset.hex;
-                    const colorName = item.querySelector('.color-name').value || '未命名';
-
-                    // 1. 繪製色彩圓圈
-                    ctx.beginPath();
-                    ctx.arc(x, y, 45, 0, Math.PI * 2); 
-                    ctx.fillStyle = hexColor;
-                    ctx.fill();
-                    
-                    // 幫奶油白等極淺色加上精細淺灰色外圈線，防止在白底上隱形
-                    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-
-                    // 2. 繪製對應的中文文字
-                    ctx.fillStyle = '#333333';
-                    ctx.font = '500 14px -apple-system, BlinkMacSystemFont, Arial, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(colorName, x, y + 45 + 22); 
-                });
+                // 2. 寫文字
+                ctx.fillStyle = '#333333';
+                ctx.font = '500 14px -apple-system, BlinkMacSystemFont, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(colorName, x, y + 45 + 22); 
             });
 
-            // 觸發瀏覽器下載 PNG 圖片
+            // 觸發下載
             const link = document.createElement('a');
             link.download = '我的專屬選色表.png';
             link.href = canvas.toDataURL('image/png');
