@@ -113,7 +113,7 @@
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            display: grid; /* 使用 Grid 完美控制每排數量與對齊 */
+            display: grid;
             gap: 35px 30px;
             justify-content: center;
             max-width: 95vw;
@@ -129,6 +129,21 @@
             align-items: center;
             position: relative;
             width: 120px;
+            cursor: grab; /* 提示可以抓取拖曳 */
+            padding: 5px;
+            border-radius: 8px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .color-item:active {
+            cursor: grabbing;
+        }
+
+        /* 正在被拖曳的物件外觀 */
+        .color-item.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+            background-color: #f0f0f0;
         }
 
         /* 顏色圓圈（按鈕外觀） */
@@ -165,6 +180,7 @@
             border-radius: 4px;
             outline: none;
             transition: all 0.2s;
+            cursor: text; /* 確保輸入框內滑桿游標正常 */
         }
 
         .color-name:hover, .color-name:focus {
@@ -205,7 +221,6 @@
 
     <!-- 功能控制面板 -->
     <div class="control-panel">
-        <!-- 色碼與名稱指定區 -->
         <div class="input-group">
             <label for="input-hex">#</label>
             <input type="text" id="input-hex" placeholder="例如: FF5733" maxlength="6">
@@ -232,9 +247,9 @@
     <script>
         const container = document.getElementById('palette-container');
         let colorCounter = 0;
-        let currentCols = 6; // 預設每排 6 個
+        let currentCols = 6; 
 
-        // 17 個指定的預設顏色與名稱
+        // 17 個指定的預設顏色
         const defaultColors = [
             { hex: '#F2F1D7', name: '奶油白(白)' },
             { hex: '#E8F0AA', name: '嫩草黃(淺黃)' },
@@ -254,12 +269,13 @@
             { hex: '#1B264F', name: '深海藍(深藍)' },
             { hex: '#FFD131', name: '向日葵黃(黃)' },
             { hex: '#E63946', name: '珊瑚紅(紅)' },
-            { hex: '#682132', name: '深酒紅(深紅)' }            
+            { hex: '#682132', name: '深酒紅(深紅)' } 
         ];
 
-        // 初始化載入
+        // 初始化
         changeColumns(currentCols);
         defaultColors.forEach(item => addColorItem(item.hex, item.name));
+        initDragAndDrop(); // 初始化拖放監聽
 
         /**
          * 自由調整每排顯示數量
@@ -267,12 +283,11 @@
         function changeColumns(val) {
             currentCols = parseInt(val);
             document.getElementById('cols-val').innerText = `${val} 個`;
-            // 動態修改 Grid 排版欄位數
             container.style.gridTemplateColumns = `repeat(${currentCols}, 120px)`;
         }
 
         /**
-         * 基礎新增色圈函數（點擊標籤會觸發同一個項目的系統調色盤）
+         * 基礎新增色圈函數
          */
         function addColorItem(hex, name) {
             colorCounter++;
@@ -280,6 +295,7 @@
 
             const itemDiv = document.createElement('div');
             itemDiv.className = 'color-item';
+            itemDiv.draggable = true; // 開啟 HTML5 拖曳屬性
 
             itemDiv.innerHTML = `
                 <button class="btn-delete" title="刪除" onclick="this.parentElement.remove()">×</button>
@@ -289,21 +305,23 @@
             `;
 
             container.appendChild(itemDiv);
+
+            // 替新加入的元素綁定拖曳事件
+            bindItemDragEvents(itemDiv);
         }
 
         /**
-         * 控制面板：指定色碼新增
+         * 指定色碼新增
          */
         function quickAddColor() {
             const hexInput = document.getElementById('input-hex').value.trim();
             const nameInput = document.getElementById('input-name').value.trim();
-
             const hexRegex = /^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/;
             
-            let finalHex = '#4A90E2'; // 預設藍色
+            let finalHex = '#4A90E2'; 
             if (hexInput !== '') {
                 if (!hexRegex.test(hexInput)) {
-                    alert('請輸入正確的 16 進位色碼格式！\n例如：FF5733 或 6cf');
+                    alert('請輸入正確的 16 進位色碼格式！\n例如：FF5733');
                     return;
                 }
                 finalHex = hexInput.startsWith('#') ? hexInput : `#${hexInput}`;
@@ -311,25 +329,70 @@
 
             const finalName = nameInput !== '' ? nameInput : `自訂色 ${finalHex.toUpperCase()}`;
             
-            // 新增至畫面
             addColorItem(finalHex, finalName);
 
-            // 清空輸入框
             document.getElementById('input-hex').value = '';
             document.getElementById('input-name').value = '';
         }
 
-        /**
-         * 即時同步系統調色盤色彩到圓圈
-         */
         function updateColor(input) {
             const label = input.previousElementSibling;
             label.style.backgroundColor = input.value;
         }
 
+        /* ================= HTML5 原生拖拉功能邏輯 ================= */
+        
+        function bindItemDragEvents(item) {
+            item.addEventListener('dragstart', () => {
+                item.classList.add('dragging');
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+            });
+        }
+
+        function initDragAndDrop() {
+            // 監聽容器內的滑鼠拖曳移動
+            container.addEventListener('dragover', e => {
+                e.preventDefault(); // 必須阻擋預設事件才能觸發 drop
+                const afterElement = getDragAfterElement(container, e.clientX, e.clientY);
+                const draggingItem = document.querySelector('.color-item.dragging');
+                
+                if (draggingItem) {
+                    if (afterElement == null) {
+                        container.appendChild(draggingItem); // 放最尾端
+                    } else {
+                        container.insertBefore(draggingItem, afterElement); // 插在某個元件前面
+                    }
+                }
+            });
+        }
+
         /**
-         * 高畫質 Canvas 圖片下載功能 (精準同步當前排版)
+         * 計算當前滑鼠位置最靠近哪一個色圈元件
          */
+        function getDragAfterElement(container, x, y) {
+            const dragElements = [...container.querySelectorAll('.color-item:not(.dragging)')];
+
+            return dragElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                // 計算滑鼠中心點距離元件中心的距離
+                const offsetX = x - (box.left + box.width / 2);
+                const offsetY = y - (box.top + box.height / 2);
+                const distance = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+
+                // 判斷是否為最接近的元件
+                if (distance < closest.distance) {
+                    return { distance: distance, element: child };
+                } else {
+                    return closest;
+                }
+            }, { distance: Infinity }).element;
+        }
+
+
+        /* ================= 原生 Canvas 高畫質圖片下載 ================= */
         function downloadPalette() {
             const items = document.querySelectorAll('.color-item');
             if (items.length === 0) {
@@ -337,32 +400,28 @@
                 return;
             }
 
-            // 佈局基礎尺寸
             const itemWidth = 120;
             const itemHeight = 140;
             const gapX = 30;
             const gapY = 35;
             const padding = 40;
             
-            // 根據目前使用者設定的滑桿決定排版
             const maxCols = Math.min(items.length, currentCols); 
             const rows = Math.ceil(items.length / maxCols);
 
             const canvasWidth = (maxCols * itemWidth) + ((maxCols - 1) * gapX) + (padding * 2);
             const canvasHeight = (rows * itemHeight) + ((rows - 1) * gapY) + (padding * 2);
 
-            // 建立高解析度畫布
             const canvas = document.createElement('canvas');
             canvas.width = canvasWidth * 2; 
             canvas.height = canvasHeight * 2;
             const ctx = canvas.getContext('2d');
             ctx.scale(2, 2);
 
-            // 背景填滿純白
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            // 依序繪製
+            // 這裡會嚴格抓取「目前 DOM 樹上的最新排序」進行繪製
             items.forEach((item, index) => {
                 const col = index % maxCols;
                 const row = Math.floor(index / maxCols);
@@ -370,7 +429,6 @@
                 const x = padding + col * (itemWidth + gapX) + itemWidth / 2;
                 const y = padding + row * (itemHeight + gapY) + 45; 
 
-                // 抓取當前調色盤的真實色彩值與輸入的名字
                 const hexColor = item.querySelector('.color-picker').value;
                 const colorName = item.querySelector('.color-name').value || '未命名';
 
@@ -391,7 +449,6 @@
                 ctx.fillText(colorName, x, y + 45 + 22); 
             });
 
-            // 觸發下載
             const link = document.createElement('a');
             link.download = '我的專屬選色表.png';
             link.href = canvas.toDataURL('image/png');
